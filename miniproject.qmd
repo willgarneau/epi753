@@ -1,0 +1,91 @@
+---
+title: "code"
+format: html
+editor: visual
+---
+
+
+```{r}
+# downloading necessary packages
+library(haven)
+library(tidyverse)
+library(table1)
+library(here)
+
+mp_data <- read_dta("project_b_ts_1673833621.dta")
+```
+### Table 1
+```{r}
+# Filtering data to only include PWID
+mp_data_pwid <- mp_data %>%
+  filter(inject == 1) %>%
+  mutate(exposure_type = case_when(
+    injher == 1 & injcoc == 1 ~ "Heroin and Cocaine",
+    injher == 1 & injcoc == 0 ~ "Heroin only",
+    injher == 0 & injcoc == 1 ~ "Cocaine only",
+    injher == 0 & injcoc == 0 ~ "Neither", 
+    TRUE ~ NA
+  ))
+```
+
+
+```{r}
+# Histogram to visualize differences in depressive symptoms
+ggplot(mp_data_pwid, aes(cesdtot)) +
+  geom_histogram()
+```
+
+
+```{r}
+# Removes NA values
+mp_data_pwid_rmna <- mp_data_pwid %>%
+  filter(!is.na(exposure_type))
+```
+
+
+```{r}
+# Creates Table1
+table1(~ age + as.factor(m0f1) + as.factor(hiv) + as.factor(gnhlthst) + as.factor(alcyn) | exposure_type, data = mp_data_pwid_rmna)
+```
+
+### Crude Model
+```{r}
+mp_data_pwid_rmna$injcoc_injher <- mp_data_pwid_rmna$injcoc * mp_data_pwid_rmna$injher  
+
+logbi_model_crude <- lm(cesd23 ~ injher + injcoc + injcoc_injher, data = mp_data_pwid_rmna, family = binomial(link="log"))
+
+summary(logbi_model_crude)
+```
+
+### 95% CI for crude model
+```{r}
+confint(logbi_model_crude, 'injher', level=0.95)
+```
+
+```{r}
+confint(logbi_model_crude, 'injcoc', level=0.95)
+```
+
+```{r}
+confint(logbi_model_crude, 'injcoc_injher', level=0.95)
+```
+
+### Adjusted Model
+```{r}
+logbi_model <- lm(cesd23 ~ injher + injcoc + injcoc_injher + age + m0f1, data = mp_data_pwid_rmna, family = binomial(link="log")) 
+
+summary(logbi_model)
+```
+
+### 95% CI for adjusted model
+```{r}
+confint(logbi_model, 'injher', level=0.95)
+```
+
+```{r}
+confint(logbi_model, 'injcoc', level=0.95)
+```
+
+```{r}
+confint(logbi_model, 'injcoc_injher', level=0.95)
+```
