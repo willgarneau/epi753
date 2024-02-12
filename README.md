@@ -1,10 +1,1 @@
-# epi753
-# epi753
-# epi753
-# epi753
-# epi753
-# epi753
-# epi753
-# epi753
-# epi753
-# epi753
+Quarto file for mini project
