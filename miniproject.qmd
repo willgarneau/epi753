@@ -10,6 +10,7 @@ library(haven)
 library(tidyverse)
 library(table1)
 library(here)
+library(biostat3)
 
 mp_data <- read_dta("project_b_ts_1673833621.dta")
 ```
